@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 
-class Menu(bitmapFont: BitmapFont): Drawable, InputAdapter() {
+class Menu(bitmapFont: BitmapFont,private  val startBattleField: ()->Unit ): Stage() {
     //buttons
     private var buttons: MutableList<Button> = mutableListOf()
     private object wallpaper{
@@ -23,6 +23,7 @@ class Menu(bitmapFont: BitmapFont): Drawable, InputAdapter() {
     }
 
     override fun draw(batch: Batch) {
+        batch.begin()
         if(wallpaper.shouldAdd){
             wallpaper.blueValue += Gdx.graphics.deltaTime * 0.5f / wallpaper.timestamp
         } else  {
@@ -39,33 +40,32 @@ class Menu(bitmapFont: BitmapFont): Drawable, InputAdapter() {
         for (button in buttons){
             button.draw(batch)
         }
+        batch.end()
     }
 
     override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
-        println("Touch X:${screenX} TouchY${screenY}")
+        //println("Touch X:${screenX} TouchY${screenY}")
         for(i in 0 until buttons.size-1){
-            var button = buttons[i]
-            println("Button(${button.getX()},${button.getY()} )")
-            if (button.getX() < screenX && screenX < button.getX()+ button.width  ){
-                if (button.getY() < screenY &&  screenY < button.getY() + button.height){
+            val button = buttons[i]
+            val touchedX = screenX
+            val touchedY = Gdx.graphics.height - screenY
+            if (button.getX() < touchedX && touchedX < button.getX()+ button.width
+                    && button.getY() < touchedY &&  touchedY < button.getY() + button.height){
+                println("Button with text: ${button.text} touched")
                     when(button.text){
                         "Start" -> {
-
+                         startBattleField()
                         }
                         "Settings" -> {
                             //to do move to the settings
                         }
                      }
-
-                }
             }
         }
         return true
     }
 
     override fun mouseMoved(screenX: Int, screenY: Int): Boolean {
-        println("Hello wolrd mouse has moved!")
-        buttons.removeAt(1);
         return true
     }
     fun dispose(){
