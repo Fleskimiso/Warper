@@ -1,56 +1,68 @@
 package com.warper
 
+import com.badlogic.gdx.Application
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
+import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.g2d.Batch
 
 import com.badlogic.gdx.graphics.PerspectiveCamera
+import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g3d.Environment
 import com.badlogic.gdx.graphics.g3d.ModelBatch
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController
-import com.badlogic.gdx.math.Vector3
-import com.badlogic.gdx.math.collision.BoundingBox
 
-class BattleField(): Stage() {
+class BattleField(bitmapFont: BitmapFont): Stage() {
 
+    init {
+        bitmapFont.data.setScale(1f)
+    }
     private var perspectiveCamera = PerspectiveCamera(67f,
             Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
-     var cameraInputController = CameraInputController(perspectiveCamera)
-
-
-    private var player = Player(0f,0f, 0f)
+    private var orthographicCamera = OrthographicCamera(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
+    var cameraInputController = CameraInputController(perspectiveCamera)
+    private var player = Player(0f,0f, 0f,perspectiveCamera)
     private var modelBatch = ModelBatch()
     private var environment =  Environment()
+    private var labelPlayerX
+            = Label("X", 0f.toString(), bitmapFont,Gdx.graphics.width/2 - 100f,Gdx.graphics.width/2 - 100f)
+    private var labelPlayerY
+            = Label("Y", 0f.toString(), bitmapFont,Gdx.graphics.width/2 - 100f,Gdx.graphics.width/2 - 130f)
+    private var labelPlayerZ
+            = Label("Z", 0f.toString(), bitmapFont,Gdx.graphics.width/2 - 100f,Gdx.graphics.width/2 - 160f)
     init {
         /*to do camera initialization
         /camera position is synonymous with the player position */
-        perspectiveCamera.position.set(10f,10f,10f)
-        perspectiveCamera.lookAt(0f,0f,0f)
         perspectiveCamera.near = 1f
         perspectiveCamera.far = 300f
-        //env
-        val directionalLight = DirectionalLight()
-        directionalLight.color.set(Color.BLUE)
-        directionalLight.setDirection(0f,0f,-10f)
+        //environment
+        val blueDirectionalLight = DirectionalLight()
+        blueDirectionalLight.color.set(Color.BLUE)
+        blueDirectionalLight.setDirection(0f,0f,-10f)
+        environment.add(blueDirectionalLight)
+        val purpleDirectionalLight = DirectionalLight()
+        purpleDirectionalLight.color.set(Color.PURPLE)
+        purpleDirectionalLight.setDirection(0f,0f,10f)
+        environment.add(purpleDirectionalLight)
     }
 
     override fun draw(batch: Batch) {
         Gdx.gl.glViewport(0,0,Gdx.graphics.width,Gdx.graphics.height)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
+        Gdx.gl.glClearColor(0f,0f,0f,1f)
+        //drawing info
+        orthographicCamera.update()
+        batch.projectionMatrix = orthographicCamera.combined
+        batch.begin()
+        drawLabels(batch)
+        batch.end()
         handle_input()
-        var boundingbox = BoundingBox()
-        boundingbox = player.modelInstance.calculateBoundingBox(boundingbox)
-        perspectiveCamera.lookAt(boundingbox.centerX,
-                boundingbox.centerX,
-                boundingbox.centerX)
         perspectiveCamera.update()
         modelBatch.begin(perspectiveCamera)
-        //drawing
-        player.draw3D(modelBatch)
-        //end of drawing
+        player.draw3D(modelBatch,environment)
         modelBatch.end()
 
     }
@@ -71,25 +83,20 @@ class BattleField(): Stage() {
         return false
     }
     fun handle_input() {
-        val camera_translation_vector = Vector3(0f,0f,0f)
-        if(Gdx.input.isKeyPressed(Input.Keys.I)){
-            if(Gdx.input.isKeyPressed(Input.Keys.Z)){
-                camera_translation_vector.z += -30f * Gdx.graphics.deltaTime
-            }else if(Gdx.input.isKeyPressed(Input.Keys.X)){
-                camera_translation_vector.x += -30f * Gdx.graphics.deltaTime
-            }else if(Gdx.input.isKeyPressed(Input.Keys.Y)){
-                camera_translation_vector.y += -30f * Gdx.graphics.deltaTime
-            }
-        }else {
-            if(Gdx.input.isKeyPressed(Input.Keys.Z)){
-                camera_translation_vector.z += 30f * Gdx.graphics.deltaTime
-            }else if(Gdx.input.isKeyPressed(Input.Keys.X)){
-                camera_translation_vector.x += 30f * Gdx.graphics.deltaTime
-            }else if(Gdx.input.isKeyPressed(Input.Keys.Y)){
-                camera_translation_vector.y += 30f * Gdx.graphics.deltaTime
-            }
+        if(Gdx.app.type == Application.ApplicationType.Android) {
+            player.handleInputAndroid()
+        } else if (Gdx.app.type == Application.ApplicationType.Desktop){
+            player.handleInputDesktop()
         }
-        perspectiveCamera.translate(camera_translation_vector)
+    }
+    fun drawLabels(batch: Batch) {
+        var playerPostionVector = player.getPosition()
+        labelPlayerX.setValue(playerPostionVector.x.toString())
+        labelPlayerY.setValue(playerPostionVector.y.toString())
+        labelPlayerZ.setValue(playerPostionVector.z.toString())
+        labelPlayerX.draw(batch)
+        labelPlayerY.draw(batch)
+        labelPlayerZ.draw(batch)
     }
 
 }

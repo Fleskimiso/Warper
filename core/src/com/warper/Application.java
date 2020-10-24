@@ -22,7 +22,7 @@ public class Application extends ApplicationAdapter {
 	Stage currentStage;
 	BattleField battleField;
 	public kotlin.Unit startBattleField ()  {
-		battleField = new BattleField();
+		battleField = new BattleField(this.bitmapFont);
 		currentStage= battleField;
 		Gdx.input.setInputProcessor(new InputMultiplexer(battleField.getCameraInputController(),currentStage));
 
