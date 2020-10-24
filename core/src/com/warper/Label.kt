@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont
 class Label(private var name: String, private var value: String,private var bitmapFont: BitmapFont,
             private var x: Float, private var y: Float): Drawable {
     fun setValue(value2: String){
-        println("New value: ${name}: ${value}")
         this.value = value2
     }
 

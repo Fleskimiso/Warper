@@ -3,13 +3,11 @@ package com.warper
 import com.badlogic.gdx.Application
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
-import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.graphics.GL20
-import com.badlogic.gdx.graphics.OrthographicCamera
+import com.badlogic.gdx.graphics.*
 import com.badlogic.gdx.graphics.g2d.Batch
 
-import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.g2d.BitmapFont
+import com.badlogic.gdx.graphics.g2d.Sprite
 import com.badlogic.gdx.graphics.g3d.Environment
 import com.badlogic.gdx.graphics.g3d.ModelBatch
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
@@ -24,15 +22,24 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
             Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
     private var orthographicCamera = OrthographicCamera(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
     var cameraInputController = CameraInputController(perspectiveCamera)
-    private var player = Player(0f,0f, 0f,perspectiveCamera)
+    private var player = Player(0f,0f, 0f,perspectiveCamera,orthographicCamera)
     private var modelBatch = ModelBatch()
     private var environment =  Environment()
     private var labelPlayerX
-            = Label("X", 0f.toString(), bitmapFont,Gdx.graphics.width/2 - 100f,Gdx.graphics.width/2 - 100f)
+            = Label("X", 0f.toString(), bitmapFont,Gdx.graphics.width/2 - 100f,Gdx.graphics.height/2 - 30f)
     private var labelPlayerY
-            = Label("Y", 0f.toString(), bitmapFont,Gdx.graphics.width/2 - 100f,Gdx.graphics.width/2 - 130f)
+            = Label("Y", 0f.toString(), bitmapFont,Gdx.graphics.width/2 - 100f,Gdx.graphics.height/2 - 60f)
     private var labelPlayerZ
-            = Label("Z", 0f.toString(), bitmapFont,Gdx.graphics.width/2 - 100f,Gdx.graphics.width/2 - 160f)
+            = Label("Z", 0f.toString(), bitmapFont,Gdx.graphics.width/2 - 100f,Gdx.graphics.height/2 - 90f)
+
+    //Texture loading
+    private var backGroundTexture = Texture(Gdx.files.internal("background.png"))
+    private var backGroundSprite = Sprite(backGroundTexture)
+    init {
+        backGroundSprite.setScale((Gdx.graphics.width/backGroundSprite.texture.width).toFloat(),
+                (Gdx.graphics.height/backGroundSprite.texture.height).toFloat())
+        backGroundSprite.setPosition(-Gdx.graphics.width/2f, -Gdx.graphics.height/2f)
+    }
     init {
         /*to do camera initialization
         /camera position is synonymous with the player position */
@@ -57,7 +64,10 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
         orthographicCamera.update()
         batch.projectionMatrix = orthographicCamera.combined
         batch.begin()
+        batch.draw(backGroundTexture,-orthographicCamera.viewportWidth/2,-orthographicCamera.viewportHeight/2,
+                orthographicCamera.viewportWidth,orthographicCamera.viewportHeight)
         drawLabels(batch)
+        player.draw(batch)
         batch.end()
         handle_input()
         perspectiveCamera.update()
