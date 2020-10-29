@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.g2d.Sprite
+import com.warper.interfaces.Drawable
 
 class ImageButton(private val path: String, private var x: Float, private var y: Float, private var width: Float) : Drawable {
     private var texture = Texture(Gdx.files.internal(path))

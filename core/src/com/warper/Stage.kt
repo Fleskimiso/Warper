@@ -1,8 +1,7 @@
 package com.warper
 
 import com.badlogic.gdx.InputAdapter
-import com.warper.Drawable
-import com.badlogic.gdx.InputProcessor
+import com.warper.interfaces.Drawable
 import com.badlogic.gdx.input.GestureDetector
 import com.badlogic.gdx.math.Vector2
 

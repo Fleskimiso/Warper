@@ -12,13 +12,15 @@ import com.badlogic.gdx.graphics.g3d.Environment
 import com.badlogic.gdx.graphics.g3d.ModelBatch
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController
+import com.warper.gameobjects.Stargate
+import com.warper.util.ModelFactory
 
 class BattleField(bitmapFont: BitmapFont): Stage() {
 
     init {
         bitmapFont.data.setScale(1f)
     }
-    private var perspectiveCamera = PerspectiveCamera(67f,
+    private var perspectiveCamera = PerspectiveCamera(120f,
             Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
     private var orthographicCamera = OrthographicCamera(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
     var cameraInputController = CameraInputController(perspectiveCamera)
@@ -31,7 +33,6 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
             = Label("Y", 0f.toString(), bitmapFont,Gdx.graphics.width/2 - 100f,Gdx.graphics.height/2 - 60f)
     private var labelPlayerZ
             = Label("Z", 0f.toString(), bitmapFont,Gdx.graphics.width/2 - 100f,Gdx.graphics.height/2 - 90f)
-
     //Texture loading
     private var backGroundTexture = Texture(Gdx.files.internal("background.png"))
     private var backGroundSprite = Sprite(backGroundTexture)
@@ -44,7 +45,7 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
         /*to do camera initialization
         /camera position is synonymous with the player position */
         perspectiveCamera.near = 1f
-        perspectiveCamera.far = 300f
+        perspectiveCamera.far = 5000f
         //environment
         val blueDirectionalLight = DirectionalLight()
         blueDirectionalLight.color.set(Color.BLUE)
@@ -54,6 +55,16 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
         purpleDirectionalLight.color.set(Color.PURPLE)
         purpleDirectionalLight.setDirection(0f,0f,10f)
         environment.add(purpleDirectionalLight)
+    }
+    //
+    val stargates: MutableList<Stargate> = mutableListOf()
+    init {
+        for (i in 0..9){
+            var x: Float = Math.random().toFloat() * 100f
+            var y: Float = Math.random().toFloat() * 100f
+            var z: Float = 100f * i
+            stargates.add(Stargate(x,y,z,ModelFactory.getBlueBox()))
+        }
     }
 
     override fun draw(batch: Batch) {
@@ -73,12 +84,17 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
         perspectiveCamera.update()
         modelBatch.begin(perspectiveCamera)
         player.draw3D(modelBatch,environment)
+        for (stargate in stargates){
+            stargate.draw3D(modelBatch,environment)
+        }
         modelBatch.end()
 
     }
 
     override fun mouseMoved(screenX: Int, screenY: Int): Boolean {
-        return super.mouseMoved(screenX, screenY)
+
+        //TODO handle on swipe
+        return true
     }
 
     override fun keyDown(keycode: Int): Boolean {

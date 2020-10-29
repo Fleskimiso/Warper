@@ -14,8 +14,9 @@ import com.badlogic.gdx.utils.UBJsonReader
 import com.badlogic.gdx.graphics.g3d.Environment
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.math.collision.BoundingBox
+import com.warper.interfaces.Drawable
 
-class Player(private var x: Float,private var y: Float,private var z: Float,private var camera: PerspectiveCamera,
+class Player(private var x: Float,private var y: Float,private var z: Float,private val camera: PerspectiveCamera,
 var orthographicCamera: OrthographicCamera): Drawable {
 
     private var uBJsonReader = UBJsonReader()
@@ -34,7 +35,7 @@ var orthographicCamera: OrthographicCamera): Drawable {
     init {
         boundingbox = modelInstance.calculateBoundingBox(boundingbox)
         camera.position.set(0f,0f, -boundingbox.depth)
-        camera.lookAt(boundingbox.centerX,boundingbox.centerY,boundingbox.centerZ)
+        camera.lookAt(0f,0f,0f)
     }
     override fun draw(batch: Batch) {
         //draws controll buttons
@@ -46,10 +47,12 @@ var orthographicCamera: OrthographicCamera): Drawable {
     }
     fun handleInputDesktop() {
         if(Gdx.input.isKeyPressed(Input.Keys.W)){
-            modelInstance.transform.translate(0f,0f,-30f*Gdx.graphics.deltaTime)
+            this.camera.translate(0f,0f,-30f*Gdx.graphics.deltaTime)
+            this.modelInstance.transform.translate(0f,0f,-30f*Gdx.graphics.deltaTime)
         }
         if(Gdx.input.isKeyPressed(Input.Keys.S)){
-            modelInstance.transform.translate(0f,0f,30f*Gdx.graphics.deltaTime)
+            this.camera.translate(0f,0f,30f*Gdx.graphics.deltaTime)
+            this.modelInstance.transform.translate(0f,0f,30f*Gdx.graphics.deltaTime)
         }
     }
     fun handleInputAndroid() {
@@ -59,9 +62,11 @@ var orthographicCamera: OrthographicCamera): Drawable {
                     Gdx.input.x.toFloat(),Gdx.input.y.toFloat(),0f
             ))
             if(upButton.overLaps(touch2dCoordinates.x, touch2dCoordinates.y)){
-                modelInstance.transform.translate(0f,0f,-30f*Gdx.graphics.deltaTime)
+                this.camera.translate(0f,0f,-30f*Gdx.graphics.deltaTime)
+                this.modelInstance.transform.translate(0f,0f,-30f*Gdx.graphics.deltaTime)
             }else if(downButton.overLaps(touch2dCoordinates.x, touch2dCoordinates.y)) {
-                modelInstance.transform.translate(0f,0f,30f*Gdx.graphics.deltaTime)
+                this.camera.translate(0f,0f,30f*Gdx.graphics.deltaTime)
+                this.modelInstance.transform.translate(0f,0f,30f*Gdx.graphics.deltaTime)
             }
         }
     }

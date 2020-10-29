@@ -2,6 +2,7 @@ package com.warper
 
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.g2d.BitmapFont
+import com.warper.interfaces.Drawable
 
 class Label(private var name: String, private var value: String,private var bitmapFont: BitmapFont,
             private var x: Float, private var y: Float): Drawable {

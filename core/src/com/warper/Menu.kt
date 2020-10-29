@@ -57,7 +57,7 @@ class Menu(bitmapFont: BitmapFont,private  val startBattleField: ()->Unit ): Sta
                          startBattleField()
                         }
                         "Settings" -> {
-                            //to do move to the settings
+                            //TODO move to the settings
                         }
                      }
             }
