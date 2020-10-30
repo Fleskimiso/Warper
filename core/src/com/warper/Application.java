@@ -24,7 +24,7 @@ public class Application extends ApplicationAdapter {
 	public kotlin.Unit startBattleField ()  {
 		battleField = new BattleField(this.bitmapFont);
 		currentStage= battleField;
-		Gdx.input.setInputProcessor(new InputMultiplexer(currentStage));
+		Gdx.input.setInputProcessor(currentStage);
 
 		return Unit.INSTANCE;
 	}

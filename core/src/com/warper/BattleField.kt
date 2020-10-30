@@ -3,6 +3,7 @@ package com.warper
 import com.badlogic.gdx.Application
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
+import com.badlogic.gdx.InputProcessor
 import com.badlogic.gdx.graphics.*
 import com.badlogic.gdx.graphics.g2d.Batch
 
@@ -12,6 +13,7 @@ import com.badlogic.gdx.graphics.g3d.Environment
 import com.badlogic.gdx.graphics.g3d.ModelBatch
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController
+import com.badlogic.gdx.math.Vector3
 import com.warper.gameobjects.Stargate
 import com.warper.util.ModelFactory
 
@@ -33,6 +35,19 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
             = Label("Y", 0f.toString(), bitmapFont,Gdx.graphics.width/2 - 100f,Gdx.graphics.height/2 - 60f)
     private var labelPlayerZ
             = Label("Z", 0f.toString(), bitmapFont,Gdx.graphics.width/2 - 100f,Gdx.graphics.height/2 - 90f)
+    private var cameraLabels: MutableList<Label> = mutableListOf()
+            init{
+              for(x in 0..2){
+                  cameraLabels.add(Label(
+                      when(x) {
+                          0 ->  "camera X:"
+                          1-> "camera Y:"
+                          2-> "camera Z:"
+                          else -> "NULL"
+                      }
+                  ,"k",bitmapFont,-orthographicCamera.viewportWidth/2 ,orthographicCamera.viewportHeight/2 - 30f*(x+1)))
+              }
+            }
     //Texture loading
     private var backGroundTexture = Texture(Gdx.files.internal("background.png"))
     private var backGroundSprite = Sprite(backGroundTexture)
@@ -59,10 +74,10 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
     //
     val stargates: MutableList<Stargate> = mutableListOf()
     init {
-        for (i in 0..9){
-            var x: Float = Math.random().toFloat() * 100f
-            var y: Float = Math.random().toFloat() * 100f
-            var z: Float = 100f * i
+        for (i in 0..19){
+            val x: Float = (1f-  2*Math.random().toFloat()) * 10f
+            val y: Float = (1f-  2*Math.random().toFloat()) * 10f
+            val z: Float = -100f * i
             stargates.add(Stargate(x,y,z,ModelFactory.getBlueBox()))
         }
     }
@@ -75,12 +90,15 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
         orthographicCamera.update()
         batch.projectionMatrix = orthographicCamera.combined
         batch.begin()
-        batch.draw(backGroundTexture,-orthographicCamera.viewportWidth/2,-orthographicCamera.viewportHeight/2,
+        //black background for debug
+       batch.draw(backGroundTexture,-orthographicCamera.viewportWidth/2,-orthographicCamera.viewportHeight/2,
                 orthographicCamera.viewportWidth,orthographicCamera.viewportHeight)
+
         drawLabels(batch)
         player.draw(batch)
         batch.end()
         handle_input()
+        logic()
         perspectiveCamera.update()
         modelBatch.begin(perspectiveCamera)
         player.draw3D(modelBatch,environment)
@@ -91,23 +109,31 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
 
     }
 
-    override fun mouseMoved(screenX: Int, screenY: Int): Boolean {
+    //  TODO: HANDLE ANDROID PAN
+    override fun pan(x: Float, y: Float, deltaX: Float, deltaY: Float): Boolean {
+        return super.pan(x, y, deltaX, deltaY)
+    }
 
-        //TODO handle on swipe
-        return true
+    override fun mouseMoved(screenX: Int, screenY: Int): Boolean {
+        val touch2dScreenCoords = this.orthographicCamera.unproject(
+                Vector3(screenX.toFloat(), screenY.toFloat(), 0f)
+        )
+        touch2dScreenCoords.z = -1000f + perspectiveCamera.position.z
+        this.player.setFocus(touch2dScreenCoords)
+       return true
     }
 
     override fun keyDown(keycode: Int): Boolean {
         when(keycode){
-            Input.Keys.UP -> {
-                //perspectiveCamera.translate(0f,0f,20f)
-            }
-            Input.Keys.DOWN -> {
-               // perspectiveCamera.translate(0f,0f,-20f)
+            Input.Keys.R -> {
+                this.player.setFocus(Vector3(
+                        0f,0f,-1000f + perspectiveCamera.position.z
+                ))
             }
         }
-        return false
+        return true
     }
+
     fun handle_input() {
         if(Gdx.app.type == Application.ApplicationType.Android) {
             player.handleInputAndroid()
@@ -115,6 +141,10 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
             player.handleInputDesktop()
         }
     }
+    fun logic(){
+        this.player.handlePlayerLogic()
+    }
+
     fun drawLabels(batch: Batch) {
         var playerPostionVector = player.getPosition()
         labelPlayerX.setValue(playerPostionVector.x.toString())
@@ -123,6 +153,17 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
         labelPlayerX.draw(batch)
         labelPlayerY.draw(batch)
         labelPlayerZ.draw(batch)
+        for (x in 0..2){
+            cameraLabels[x].setValue(when(x){
+                0-> perspectiveCamera.position.x.toString()
+                1-> perspectiveCamera.position.y.toString()
+                2 -> perspectiveCamera.position.z.toString()
+                else -> "0"
+            })
+            cameraLabels[x].draw(batch)
+        }
+
     }
+
 
 }
