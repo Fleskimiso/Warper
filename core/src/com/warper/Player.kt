@@ -23,13 +23,6 @@ var orthographicCamera: OrthographicCamera): Drawable {
     private var model = g3dModelLoader.loadModel(Gdx.files.getFileHandle("Spaceship.g3db",
     Files.FileType.Internal))
     private var boundingbox = BoundingBox()
-    //TODO buttons rendering
-    // actually remove buttons and add touchHandlig add via left or right touch
-    private var upButton = ImageButton("up-chevron.png",  Gdx.graphics.width/2f - Gdx.graphics.width/16f
-            , 0f, Gdx.graphics.width/8f)
-    private var downButton = ImageButton("down-chevron.png",-Gdx.graphics.width/2f+Gdx.graphics.width/16f , 0f,
-            Gdx.graphics.width/8f)
-
     var modelInstance = ModelInstance(model, x, y, z)
     init {
         boundingbox = modelInstance.calculateBoundingBox(boundingbox)
@@ -38,10 +31,11 @@ var orthographicCamera: OrthographicCamera): Drawable {
         modelInstance.transform.translate(0f,-10f,-10f)
         modelInstance.transform.rotate(Vector3(0f,10f,0f),180f)
     }
+    private var focusVector3 = Vector3(0f,0f,-10f)
+
+    //draws nothing
     override fun draw(batch: Batch) {
-        //draws controll buttons
-        upButton.draw(batch)
-        downButton.draw(batch)
+
     }
     fun draw3D( modelBatch: ModelBatch, enviroment: Environment) {
         modelBatch.render(modelInstance, enviroment)
@@ -52,15 +46,11 @@ var orthographicCamera: OrthographicCamera): Drawable {
             this.camera.translate(translationVector)
             this.modelInstance.transform.translate(translationVector.scl(-1f))
         }
-        if(Gdx.input.isKeyPressed(Input.Keys.S)){
-            val translationVector = Vector3(0f,0f,30f*Gdx.graphics.deltaTime)
+        if(Gdx.input.isKeyPressed(Input.Keys.S)) {
+            val translationVector = Vector3(0f, 0f, 30f * Gdx.graphics.deltaTime)
             this.camera.translate(translationVector)
             this.modelInstance.transform.translate(translationVector.scl(-1f))
         }
-
-       /* if(Gdx.input.justTouched()){
-            this.handleTouch(Gdx.input.x.toFloat(),Gdx.input.y.toFloat())
-        }*/
 
     }
     fun handleInputAndroid() {
@@ -69,25 +59,32 @@ var orthographicCamera: OrthographicCamera): Drawable {
             val touch2dCoordinates = orthographicCamera.unproject(Vector3(
                     Gdx.input.x.toFloat(),Gdx.input.y.toFloat(),0f
             ))
-            if(upButton.overLaps(touch2dCoordinates.x, touch2dCoordinates.y)){
-                this.camera.translate(0f,0f,-30f*Gdx.graphics.deltaTime)
-                this.modelInstance.transform.translate(0f,0f,-30f*Gdx.graphics.deltaTime)
-            }else if(downButton.overLaps(touch2dCoordinates.x, touch2dCoordinates.y)) {
-                this.camera.translate(0f,0f,30f*Gdx.graphics.deltaTime)
-                this.modelInstance.transform.translate(0f,0f,30f*Gdx.graphics.deltaTime)
+            if(touch2dCoordinates.x > orthographicCamera.viewportWidth/4 ){
+                this.camera.translate(10f*Gdx.graphics.deltaTime,0f,0f)
+                this.modelInstance.transform.translate(10f*Gdx.graphics.deltaTime,0f,0f)
+                this.setFocus(Vector3(10f*Gdx.graphics.deltaTime,0f,0f))
+            }else if(touch2dCoordinates.x < -orthographicCamera.viewportWidth/4) {
+                this.camera.translate(-10f*Gdx.graphics.deltaTime,0f,0f)
+                this.modelInstance.transform.translate(-10f*Gdx.graphics.deltaTime,0f,0f)
+                this.setFocus(Vector3(-10f*Gdx.graphics.deltaTime,0f,0f))
+            }
+            if(touch2dCoordinates.y > orthographicCamera.viewportHeight/4){
+                this.camera.translate(0f,10f*Gdx.graphics.deltaTime,0f)
+                this.modelInstance.transform.translate(0f,10f*Gdx.graphics.deltaTime,0f)
+                this.setFocus(Vector3(0f,10f*Gdx.graphics.deltaTime,0f))
+            } else if (touch2dCoordinates.y < -orthographicCamera.viewportHeight/4){
+                this.camera.translate(0f,-10f*Gdx.graphics.deltaTime,0f)
+                this.modelInstance.transform.translate(0f,-10f*Gdx.graphics.deltaTime,0f)
+                this.setFocus(Vector3(0f,-10f*Gdx.graphics.deltaTime,0f))
             }
         }
     }
     fun getPosition(): Vector3 {
         return this.modelInstance.transform.getTranslation(Vector3(0f,0f,0f))
     }
-    fun handleTouch(screenX: Float, screenY: Float){
-        println("Touched handled changing focus position")
-        val focusCoords = this.camera.unproject(Vector3(screenX,screenY, 0f))
-        this.camera.lookAt(focusCoords)
-    }
     fun setFocus(position: Vector3) {
-        this.camera.lookAt(position)
+        this.focusVector3 = position
+        this.camera.lookAt(focusVector3)
     }
     fun handlePlayerLogic() {
         val translationVector = Vector3(0f,0f,-50f*Gdx.graphics.deltaTime)
