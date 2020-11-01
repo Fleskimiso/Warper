@@ -3,7 +3,6 @@ package com.warper
 import com.badlogic.gdx.Application
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
-import com.badlogic.gdx.InputProcessor
 import com.badlogic.gdx.graphics.*
 import com.badlogic.gdx.graphics.g2d.Batch
 
@@ -78,7 +77,7 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
             val x: Float = (1f-  2*Math.random().toFloat()) * 10f
             val y: Float = (1f-  2*Math.random().toFloat()) * 10f
             val z: Float = -100f * i
-            stargates.add(Stargate(x,y,z,ModelFactory.getBlueBox()))
+            stargates.add(Stargate(x,y,z,ModelFactory.getBox()))
         }
     }
 
@@ -111,7 +110,9 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
 
     //  TODO: HANDLE ANDROID PAN
     override fun pan(x: Float, y: Float, deltaX: Float, deltaY: Float): Boolean {
-        return super.pan(x, y, deltaX, deltaY)
+        println("Handle pan")
+        this.player.handlePan(x,y,deltaX,deltaY)
+        return true
     }
 
     override fun mouseMoved(screenX: Int, screenY: Int): Boolean {
@@ -146,7 +147,7 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
     }
 
     fun drawLabels(batch: Batch) {
-        var playerPostionVector = player.getPosition()
+        val playerPostionVector = player.getPosition()
         labelPlayerX.setValue(playerPostionVector.x.toString())
         labelPlayerY.setValue(playerPostionVector.y.toString())
         labelPlayerZ.setValue(playerPostionVector.z.toString())
@@ -165,5 +166,17 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
 
     }
 
+    override fun dispose() {
+        this.player.dispose()
+        for(stargate in this.stargates ){
+            stargate.dispose()
+        }
+        labelPlayerX.dispose()
+        labelPlayerY.dispose()
+        labelPlayerZ.dispose()
+        for (label in this.cameraLabels){
+            label.dispose()
+        }
+    }
 
 }

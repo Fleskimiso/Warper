@@ -10,14 +10,16 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 object ModelFactory {
 
     private val modelBuilder = ModelBuilder()
-    private val model = modelBuilder.createBox(10f,5f,5f,
+    private var model = modelBuilder.createBox(10f,5f,5f,
     Material(ColorAttribute.createDiffuse(0f,0f,1f,0f)),
             VertexAttributes.Usage.Position.toLong().or(VertexAttributes.Usage.Normal.toLong()))
 
-    public fun getBlueBox(): ModelInstance {
+    public fun getBox(): ModelInstance {
         return ModelInstance(model)
     }
-    public fun getBox(color: Color){
-        //TODO be implemented
+    fun setBoxColor(color: Color){
+        model = modelBuilder.createBox(10f,5f,5f,
+                Material(ColorAttribute.createDiffuse(color)),
+                VertexAttributes.Usage.Position.toLong().or(VertexAttributes.Usage.Normal.toLong()))
     }
 }

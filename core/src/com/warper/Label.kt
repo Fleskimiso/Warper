@@ -12,6 +12,9 @@ class Label(private var name: String, private var value: String,private var bitm
 
     override fun draw(batch: Batch) {
         bitmapFont.cache.clear()
-        bitmapFont.draw(batch, "${name}: ${value}",x, y )
+        bitmapFont.draw(batch, "$name: $value",x, y )
+    }
+    override fun dispose() {
+        bitmapFont.dispose()
     }
 }

@@ -5,7 +5,7 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch
 import com.badlogic.gdx.graphics.g3d.ModelInstance
 import com.warper.interfaces.Drawable3D
 
-open class Gameobject(x: Float, y:Float, z:Float, val modelInstance: ModelInstance): Drawable3D {
+open class GameObject(x: Float, y:Float, z:Float, private val modelInstance: ModelInstance): Drawable3D {
 
     init {
         modelInstance.transform.translate(x, y, z)
@@ -17,5 +17,9 @@ open class Gameobject(x: Float, y:Float, z:Float, val modelInstance: ModelInstan
         }else{
             modelBatch.render(modelInstance,environment)
         }
+    }
+
+    override fun dispose() {
+        modelInstance.model.dispose()
     }
 }

@@ -17,6 +17,10 @@ class ImageButton(private val path: String, private var x: Float, private var y:
     override fun draw(batch: Batch) {
         sprite.draw(batch)
     }
+
+    override fun dispose() {
+        sprite.texture.dispose()
+    }
     fun overLaps(x: Float, y:Float): Boolean{
         return sprite.boundingRectangle.contains(x, y)
     }
