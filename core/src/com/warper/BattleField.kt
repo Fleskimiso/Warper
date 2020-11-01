@@ -21,7 +21,7 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
     init {
         bitmapFont.data.setScale(1f)
     }
-    private var perspectiveCamera = PerspectiveCamera(120f,
+    private var perspectiveCamera = PerspectiveCamera(80f,
             Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
     private var orthographicCamera = OrthographicCamera(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
     var cameraInputController = CameraInputController(perspectiveCamera)
@@ -110,8 +110,20 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
 
     //  TODO: HANDLE ANDROID PAN
     override fun pan(x: Float, y: Float, deltaX: Float, deltaY: Float): Boolean {
-        println("Handle pan")
         this.player.handlePan(x,y,deltaX,deltaY)
+        return true
+    }
+
+    override fun zoom(initialDistance: Float, distance: Float): Boolean {
+        println("Zoom handled; Ratio:${distance/initialDistance}")
+        val sensitivity = 0.3f
+        if(distance/initialDistance > 1) {
+            perspectiveCamera.fieldOfView = (perspectiveCamera.fieldOfView
+                    + sensitivity * Gdx.graphics.deltaTime * perspectiveCamera.fieldOfView * (distance/initialDistance))
+        } else {
+            perspectiveCamera.fieldOfView = (perspectiveCamera.fieldOfView
+                    - sensitivity * Gdx.graphics.deltaTime * perspectiveCamera.fieldOfView * (distance/initialDistance))
+        }
         return true
     }
 
@@ -135,15 +147,22 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
         return true
     }
 
-    fun handle_input() {
+    private fun handle_input() {
         if(Gdx.app.type == Application.ApplicationType.Android) {
             player.handleInputAndroid()
         } else if (Gdx.app.type == Application.ApplicationType.Desktop){
             player.handleInputDesktop()
         }
     }
-    fun logic(){
+    private fun logic(){
         this.player.handlePlayerLogic()
+        for (i in 0 until stargates.size-1){
+            if(perspectiveCamera.position.z <  stargates[i].getPosition().z ){
+                stargates[i].setPosition((1f-  2*Math.random().toFloat()) * 10f,
+                        (1f-  2*Math.random().toFloat()) * 10f,
+                        stargates.size*(-100f) + stargates[i].getPosition().z )
+            }
+        }
     }
 
     fun drawLabels(batch: Batch) {
@@ -180,3 +199,4 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
     }
 
 }
+//TODO adding score on collision with box(stargate)
