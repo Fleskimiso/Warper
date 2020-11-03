@@ -15,17 +15,18 @@ import com.badlogic.gdx.math.collision.BoundingBox
 import com.badlogic.gdx.utils.UBJsonReader
 import com.warper.interfaces.Drawable
 import com.warper.interfaces.Drawable3D
+import com.warper.util.ModelFactory
 
 class Player( x: Float, y: Float, z: Float,private val camera: PerspectiveCamera,
 private val orthographicCamera: OrthographicCamera): Drawable, Drawable3D {
 
-    private var uBJsonReader = UBJsonReader()
-    private var g3dModelLoader = G3dModelLoader(uBJsonReader)
-    private var model = g3dModelLoader.loadModel(Gdx.files.getFileHandle("Spaceship.g3db",
-    Files.FileType.Internal))
+    private val speedZ= 200f
     private var boundingBox = BoundingBox()
-    private var modelInstance = ModelInstance(model, x, y, z)
-    private var speed = 50f
+    private var modelInstance = ModelFactory.getSpaceShipInstance()
+    init {
+        modelInstance.transform.translate(x, y, z)
+    }
+    private var speed = 100f
     init {
         boundingBox = modelInstance.calculateBoundingBox(boundingBox)
         camera.position.set(0f, 0f, 0f)
@@ -44,18 +45,18 @@ private val orthographicCamera: OrthographicCamera): Drawable, Drawable3D {
     }
 
     override fun dispose() {
-        this.model.dispose()
+        this.modelInstance.model.dispose()
     }
     fun handleInputDesktop() {
         if(Gdx.input.isKeyPressed(Input.Keys.W)){
             val translationVector = Vector3(0f,speed*Gdx.graphics.deltaTime,0f)
             this.camera.translate(translationVector)
-            this.modelInstance.transform.translate(translationVector.scl(-1f))
+            this.modelInstance.transform.translate(translationVector.scl(1f))
         }
         else if(Gdx.input.isKeyPressed(Input.Keys.S)) {
             val translationVector = Vector3(0f,-speed*Gdx.graphics.deltaTime,0f)
             this.camera.translate(translationVector)
-            this.modelInstance.transform.translate(translationVector.scl(-1f))
+            this.modelInstance.transform.translate(translationVector.scl(1f))
         }
         if (Gdx.input.isKeyPressed(Input.Keys.A)){
             val translationVector = Vector3(-speed*Gdx.graphics.deltaTime,0f,0f)
@@ -101,7 +102,7 @@ private val orthographicCamera: OrthographicCamera): Drawable, Drawable3D {
         this.camera.lookAt(focusVector3)
     }
     fun handlePlayerLogic() {
-        val translationVector = Vector3(0f,0f,-50f*Gdx.graphics.deltaTime)
+        val translationVector = Vector3(0f,0f,-speedZ*Gdx.graphics.deltaTime)
         camera.translate(translationVector)
         modelInstance.transform.translate(translationVector.scl(-1f))
     }
@@ -116,6 +117,8 @@ private val orthographicCamera: OrthographicCamera): Drawable, Drawable3D {
         setFocus(Vector3(touchCoordinates.x,touchCoordinates.y,-1000f + camera.position.z))
         */
     }
-
+    fun getVelocity() : Float {
+        return this.speedZ
+    }
 
 }

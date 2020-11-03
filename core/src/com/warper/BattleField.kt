@@ -74,10 +74,10 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
     val stargates: MutableList<Stargate> = mutableListOf()
     init {
         for (i in 0..19){
-            val x: Float = (1f-  2*Math.random().toFloat()) * 10f
-            val y: Float = (1f-  2*Math.random().toFloat()) * 10f
-            val z: Float = -100f * i
-            stargates.add(Stargate(x,y,z,ModelFactory.getBox()))
+            val x: Float = (1f-  2*Math.random().toFloat()) * 100f
+            val y: Float = (1f-  2*Math.random().toFloat()) * 100f
+            val z: Float = -this.player.getVelocity() * i * 2
+            stargates.add(Stargate(x,y,z,ModelFactory.getStarGateInstance()))
         }
     }
 

@@ -22,10 +22,10 @@ open class GameObject(x: Float, y:Float, z:Float, protected val modelInstance: M
     override fun dispose() {
         modelInstance.model.dispose()
     }
-    fun setPosition(x:Float,y:Float,z:Float){
+    open fun setPosition(x:Float,y:Float,z:Float){
         this.modelInstance.transform.setTranslation(Vector3(x,y,z))
     }
-    fun getPosition(): Vector3{
+    open fun getPosition(): Vector3{
         return this.modelInstance.transform.getTranslation(Vector3(0f,0f,0f))
     }
 }
