@@ -9,6 +9,9 @@ class Label(private var name: String, private var value: String,private var bitm
     fun setValue(value2: String){
         this.value = value2
     }
+    fun getValue() : String {
+        return value
+    }
 
     override fun draw(batch: Batch) {
         bitmapFont.cache.clear()

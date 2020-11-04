@@ -80,6 +80,7 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
             stargates.add(Stargate(x,y,z,ModelFactory.getStarGateInstance()))
         }
     }
+    val scoreLabel = Label("Score", 0.toString(), bitmapFont,0f, orthographicCamera.viewportHeight/2f -30f )
 
     override fun draw(batch: Batch) {
         Gdx.gl.glViewport(0,0,Gdx.graphics.width,Gdx.graphics.height)
@@ -158,9 +159,12 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
         this.player.handlePlayerLogic()
         for (i in 0 until stargates.size-1){
             if(perspectiveCamera.position.z <  stargates[i].getPosition().z ){
-                stargates[i].setPosition((1f-  2*Math.random().toFloat()) * 10f,
-                        (1f-  2*Math.random().toFloat()) * 10f,
-                        stargates.size*(-100f) + stargates[i].getPosition().z )
+                if(stargates[i].isWithin(this.player.getPosition())){
+                    scoreLabel.setValue((scoreLabel.getValue().toInt() + 1).toString())
+                }
+                stargates[i].setPosition((1f-  2*Math.random().toFloat()) * 50f,
+                        (1f-  2*Math.random().toFloat()) * 50f,
+                        -stargates.size*(this.player.getVelocity() * 10) + stargates[i].getPosition().z )
             }
         }
     }
@@ -182,6 +186,7 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
             })
             cameraLabels[x].draw(batch)
         }
+        scoreLabel.draw(batch)
 
     }
 
@@ -196,6 +201,16 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
         for (label in this.cameraLabels){
             label.dispose()
         }
+    }
+
+    override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
+        this.player.setVelocity(200f)
+        return true
+    }
+
+    override fun touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
+        this.player.setVelocity(20f)
+        return true
     }
 
 }
