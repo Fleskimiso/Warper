@@ -8,7 +8,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.GlyphLayout
 import com.badlogic.gdx.graphics.g2d.Sprite
 
-class Button(var width: Int,var height: Int,var text: String,private var borderColor: Color,private val bitmapFont: BitmapFont,x: Float,y: Float) {
+class Button(var width: Int,var height: Int,var text: String,borderColor: Color,private val bitmapFont: BitmapFont,x: Float,y: Float) {
     private var sprite : Sprite? = null
     private var glyphLayout =GlyphLayout(bitmapFont, text)
     init {
@@ -31,9 +31,6 @@ class Button(var width: Int,var height: Int,var text: String,private var borderC
     fun dispose() {
         sprite!!.texture.dispose()
         bitmapFont.dispose()
-    }
-    fun getButtonText(): String{
-        return this.text
     }
     fun getX(): Float {
         return this.sprite!!.x

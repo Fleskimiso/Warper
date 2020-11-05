@@ -1,6 +1,7 @@
 package com.warper
 
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.Input
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.g2d.Batch
@@ -71,6 +72,15 @@ class Menu(bitmapFont: BitmapFont,private  val startBattleField: ()->Unit ): Sta
         for (button in buttons){
             button.dispose()
         }
+    }
+
+    override fun keyDown(keycode: Int): Boolean {
+        when(keycode) {
+            Input.Keys.ENTER -> {
+                startBattleField()
+            }
+        }
+        return true
     }
 
 }

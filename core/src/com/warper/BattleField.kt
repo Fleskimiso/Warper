@@ -5,14 +5,12 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.graphics.*
 import com.badlogic.gdx.graphics.g2d.Batch
-
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.Sprite
 import com.badlogic.gdx.graphics.g3d.Environment
 import com.badlogic.gdx.graphics.g3d.ModelBatch
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController
-import com.badlogic.gdx.math.Vector3
 import com.warper.gameobjects.Stargate
 import com.warper.util.ModelFactory
 
@@ -56,11 +54,9 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
         backGroundSprite.setPosition(-Gdx.graphics.width/2f, -Gdx.graphics.height/2f)
     }
     init {
-        /*to do camera initialization
-        /camera position is synonymous with the player position */
         perspectiveCamera.near = 1f
         perspectiveCamera.far = 5000f
-        //environment
+        //environment of spaceship
         val blueDirectionalLight = DirectionalLight()
         blueDirectionalLight.color.set(Color.BLUE)
         blueDirectionalLight.setDirection(0f,0f,-10f)
@@ -71,38 +67,39 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
         environment.add(purpleDirectionalLight)
     }
     //
-    val stargates: MutableList<Stargate> = mutableListOf()
+    private val starGates: MutableList<Stargate> = mutableListOf()
     init {
-        for (i in 0..19){
+        for (i in 0..6){
             val x: Float = (1f-  2*Math.random().toFloat()) * 100f
             val y: Float = (1f-  2*Math.random().toFloat()) * 100f
             val z: Float = -this.player.getVelocity() * i * 2
-            stargates.add(Stargate(x,y,z,ModelFactory.getStarGateInstance()))
+            starGates.add(Stargate(x,y,z,ModelFactory.getStarGateInstance()))
         }
     }
-    val scoreLabel = Label("Score", 0.toString(), bitmapFont,0f, orthographicCamera.viewportHeight/2f -30f )
+    private val scoreLabel = Label("Score", 0.toString(), bitmapFont,0f, orthographicCamera.viewportHeight/2f -30f )
 
     override fun draw(batch: Batch) {
         Gdx.gl.glViewport(0,0,Gdx.graphics.width,Gdx.graphics.height)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
         Gdx.gl.glClearColor(0f,0f,0f,1f)
-        //drawing info
+        //2d Draws
         orthographicCamera.update()
         batch.projectionMatrix = orthographicCamera.combined
         batch.begin()
-        //black background for debug
        batch.draw(backGroundTexture,-orthographicCamera.viewportWidth/2,-orthographicCamera.viewportHeight/2,
                 orthographicCamera.viewportWidth,orthographicCamera.viewportHeight)
 
         drawLabels(batch)
         player.draw(batch)
         batch.end()
-        handle_input()
+        //input -> logic -> drawing
+        handleInput()
         logic()
+        //3d Draws
         perspectiveCamera.update()
         modelBatch.begin(perspectiveCamera)
         player.draw3D(modelBatch,environment)
-        for (stargate in stargates){
+        for (stargate in starGates){
             stargate.draw3D(modelBatch,environment)
         }
         modelBatch.end()
@@ -111,10 +108,11 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
 
     //  TODO: HANDLE ANDROID PAN
     override fun pan(x: Float, y: Float, deltaX: Float, deltaY: Float): Boolean {
-        this.player.handlePan(x,y,deltaX,deltaY)
+        this.player.direct(x, y)
         return true
     }
 
+    /*
     override fun zoom(initialDistance: Float, distance: Float): Boolean {
         println("Zoom handled; Ratio:${distance/initialDistance}")
         val sensitivity = 0.3f
@@ -126,29 +124,23 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
                     - sensitivity * Gdx.graphics.deltaTime * perspectiveCamera.fieldOfView * (distance/initialDistance))
         }
         return true
-    }
+    } */
 
-    override fun mouseMoved(screenX: Int, screenY: Int): Boolean {
-        val touch2dScreenCoords = this.orthographicCamera.unproject(
-                Vector3(screenX.toFloat(), screenY.toFloat(), 0f)
-        )
-        touch2dScreenCoords.z = -1000f + perspectiveCamera.position.z
-        this.player.setFocus(touch2dScreenCoords)
-       return true
+    override fun touchDown(x: Float, y: Float, pointer: Int, button: Int): Boolean {
+        this.player.direct(x,y)
+        return true
     }
 
     override fun keyDown(keycode: Int): Boolean {
         when(keycode){
             Input.Keys.R -> {
-                this.player.setFocus(Vector3(
-                        0f,0f,-1000f + perspectiveCamera.position.z
-                ))
+                this.player.back(200f)
             }
         }
         return true
     }
 
-    private fun handle_input() {
+    private fun handleInput() {
         if(Gdx.app.type == Application.ApplicationType.Android) {
             player.handleInputAndroid()
         } else if (Gdx.app.type == Application.ApplicationType.Desktop){
@@ -157,23 +149,23 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
     }
     private fun logic(){
         this.player.handlePlayerLogic()
-        for (i in 0 until stargates.size-1){
-            if(perspectiveCamera.position.z <  stargates[i].getPosition().z ){
-                if(stargates[i].isWithin(this.player.getPosition())){
+        for (i in 0 until starGates.size-1){
+            if(perspectiveCamera.position.z <  starGates[i].getPosition().z ){
+                if(starGates[i].isWithin(this.player.getPosition())){
                     scoreLabel.setValue((scoreLabel.getValue().toInt() + 1).toString())
                 }
-                stargates[i].setPosition((1f-  2*Math.random().toFloat()) * 50f,
+                starGates[i].setPosition((1f-  2*Math.random().toFloat()) * 50f,
                         (1f-  2*Math.random().toFloat()) * 50f,
-                        -stargates.size*(this.player.getVelocity() * 10) + stargates[i].getPosition().z )
+                        -(40f * 20) * (1f + 2*Math.random().toFloat()) + perspectiveCamera.position.z )
             }
         }
     }
 
-    fun drawLabels(batch: Batch) {
-        val playerPostionVector = player.getPosition()
-        labelPlayerX.setValue(playerPostionVector.x.toString())
-        labelPlayerY.setValue(playerPostionVector.y.toString())
-        labelPlayerZ.setValue(playerPostionVector.z.toString())
+    private fun drawLabels(batch: Batch) {
+        val playerPositionVector = player.getPosition()
+        labelPlayerX.setValue(playerPositionVector.x.toString())
+        labelPlayerY.setValue(playerPositionVector.y.toString())
+        labelPlayerZ.setValue(playerPositionVector.z.toString())
         labelPlayerX.draw(batch)
         labelPlayerY.draw(batch)
         labelPlayerZ.draw(batch)
@@ -192,7 +184,7 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
 
     override fun dispose() {
         this.player.dispose()
-        for(stargate in this.stargates ){
+        for(stargate in this.starGates ){
             stargate.dispose()
         }
         labelPlayerX.dispose()
@@ -203,15 +195,34 @@ class BattleField(bitmapFont: BitmapFont): Stage() {
         }
     }
 
-    override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
-        this.player.setVelocity(200f)
+    override fun longPress(x: Float, y: Float): Boolean {
+        if(!player.getShouldMove()) {
+            this.player.setVelocity(200f)
+        }
+        return true
+    }
+
+    override fun tap(x: Float, y: Float, count: Int, button: Int): Boolean {
+        if(count >= 2) {
+            if(player.getVelocity() == 40f){
+                this.player.setVelocity(200f)
+            }else if (player.getVelocity() == 200f) {
+                this.player.setVelocity(40f)
+            }
+        }
         return true
     }
 
     override fun touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
-        this.player.setVelocity(20f)
+        player.setShouldMove(false)
         return true
     }
 
 }
-//TODO adding score on collision with box(stargate)
+/**
+ * Things that need to be improved:
+ * - spaceship collision with stargate
+ * Things that might be added:
+ * - stargate shining and activation on close distance
+ * - setting steering values and setting menu
+ */
